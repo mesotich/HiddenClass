@@ -1,10 +1,13 @@
 package com.javarush.task.task36.task3606;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+
 
 /*
 
@@ -29,9 +32,44 @@ public class Solution {
     }
 
     public void scanFileSystem() throws ClassNotFoundException {
+        File[] files = new File(packageName).listFiles((dir, name) -> name.endsWith(".class"));
+        if (files == null)
+            return;
+        for (File file : files
+        ) {
+            if (!file.isFile())
+                continue;
+            ClassLoader classLoader = new ClassLoader() {
+                @Override
+                protected Class<?> findClass(String name) throws ClassNotFoundException {
+                    try {
+                        byte[] bytes = Files.readAllBytes(file.toPath());
+                        return defineClass(null, bytes, 0, bytes.length);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return findClass(name);
+                }
+            };
+
+            Class<?> clazz = classLoader.loadClass(packageName.replace(File.separator, "\\"));
+            hiddenClasses.add(clazz);
+        }
     }
 
     public HiddenClass getHiddenClassObjectByKey(String key) {
+        for (Class<?> cl : hiddenClasses
+        ) {
+            if (cl.getSimpleName().toLowerCase().startsWith(key.toLowerCase())) {
+                try {
+                    Constructor<?> constructor = cl.getDeclaredConstructor(null);
+                    constructor.setAccessible(true);
+                    return (HiddenClass) constructor.newInstance();
+                } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         return null;
     }
 }
