@@ -10,6 +10,8 @@ import java.util.stream.LongStream;
 public class Solution {
     public static void main(String[] args) {
         testStrategy(new HashMapStorageStrategy(), 100L);
+        testStrategy(new OurHashBiMapStorageStrategy(), 100L);
+        testStrategy(new HashBiMapStorageStrategy(), 100L);
         testStrategy(new OurHashMapStorageStrategy(), 100L);
         testStrategy(new FileStorageStrategy(), 100L);
     }
