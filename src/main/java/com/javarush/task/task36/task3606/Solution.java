@@ -1,75 +1,29 @@
 package com.javarush.task.task36.task3606;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-
+import java.util.Map;
 
 /*
-
-Осваиваем ClassLoader и Reflection
-
+MyMultiMap
 */
 
 public class Solution {
-    private List<Class> hiddenClasses = new ArrayList<>();
-    private String packageName;
-
-    public Solution(String packageName) {
-        this.packageName = packageName;
-    }
-
-    public static void main(String[] args) throws ClassNotFoundException {
-        Solution solution = new Solution(Solution.class.getProtectionDomain().getCodeSource().getLocation().getPath() + "com/javarush/task/task36/task3606/data/second");
-        solution.scanFileSystem();
-        System.out.println(solution.getHiddenClassObjectByKey("secondhiddenclassimpl"));
-        System.out.println(solution.getHiddenClassObjectByKey("firsthiddenclassimpl"));
-        System.out.println(solution.getHiddenClassObjectByKey("packa"));
-    }
-
-    public void scanFileSystem() throws ClassNotFoundException {
-        File[] files = new File(packageName).listFiles((dir, name) -> name.endsWith(".class"));
-        if (files == null)
-            return;
-        for (File file : files
-        ) {
-            if (!file.isFile())
-                continue;
-            ClassLoader classLoader = new ClassLoader() {
-                @Override
-                protected Class<?> findClass(String name) throws ClassNotFoundException {
-                    try {
-                        byte[] bytes = Files.readAllBytes(file.toPath());
-                        return defineClass(null, bytes, 0, bytes.length);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    return findClass(name);
-                }
-            };
-
-            Class<?> clazz = classLoader.loadClass(packageName.replace(File.separator, "\\"));
-            hiddenClasses.add(clazz);
+    public static void main(String[] args) {
+        Map<Integer, Integer> map = new MyMultiMap<>(3);
+        for (int i = 0; i < 7; i++) {
+            map.put(i, i);
         }
-    }
-
-    public HiddenClass getHiddenClassObjectByKey(String key) {
-        for (Class<?> cl : hiddenClasses
-        ) {
-            if (cl.getSimpleName().toLowerCase().startsWith(key.toLowerCase())) {
-                try {
-                    Constructor<?> constructor = cl.getDeclaredConstructor(null);
-                    constructor.setAccessible(true);
-                    return (HiddenClass) constructor.newInstance();
-                } catch (InstantiationException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return null;
+        map.put(5, 56);
+        map.put(5, 57);
+        System.out.println(map.put(5, 58)); // Expected: 57
+        System.out.println(map); // Expected: {0=0, 1=1, 2=2, 3=3, 4=4, 5=56, 57, 58, 6=6}
+        System.out.println(map.size()); // Expected: size = 9
+        System.out.println(map.remove(5)); // Expected: 56
+        System.out.println(map); // Expected: {0=0, 1=1, 2=2, 3=3, 4=4, 5=57, 58, 6=6}
+        System.out.println(map.size()); // Expected: size = 8
+        System.out.println(map.keySet()); // Expected: [0, 1, 2, 3, 4, 5, 6]
+        System.out.println(map.values()); // Expected: [0, 1, 2, 3, 4, 57, 58, 6]
+        System.out.println(map.containsKey(5)); // Expected: true
+        System.out.println(map.containsValue(57)); // Expected: true
+        System.out.println(map.containsValue(7)); // Expected: false
     }
 }
