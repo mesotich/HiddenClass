@@ -6,9 +6,7 @@ import com.javarush.task.task33.task3310.strategy.*;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
-public class FunctionalTests {
+public class FunctionalTest {
     @Test
     public void testHashMapStorageStrategy() {
         StorageStrategy storageStrategy = new HashMapStorageStrategy();
